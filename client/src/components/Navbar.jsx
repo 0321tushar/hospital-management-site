@@ -1,6 +1,5 @@
 import React from 'react';
 import {
-  SearchIcon,
   CalendarIcon,
   ActivityIcon,
   StethoscopeIcon,
@@ -247,30 +246,7 @@ export default function Navbar({
 
             {/* Navigation Links with Modern Icons & Generous Spacing */}
             <nav className="flex items-center" style={{ gap: '0.65rem' }}>
-              {/* 1. Find a Doctor */}
-              <a
-                href="#find-doctor"
-                className="nav-link-pill"
-                style={{
-                  fontWeight: 700,
-                  fontSize: '0.84rem',
-                  color: 'var(--primary)',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '0.45rem',
-                  backgroundColor: 'var(--primary-subtle)',
-                  padding: '0.45rem 0.95rem',
-                  borderRadius: '9999px',
-                  border: '1.5px solid var(--primary-light)',
-                  transition: 'all 0.2s ease',
-                  whiteSpace: 'nowrap'
-                }}
-              >
-                <SearchIcon size={14} color="var(--primary)" />
-                <span>Find a Doctor</span>
-              </a>
-
-              {/* 2. Book Consultation */}
+              {/* 1. Book Consultation */}
               <a
                 href="#booking"
                 className="nav-link-pill"
