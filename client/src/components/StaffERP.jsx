@@ -289,12 +289,21 @@ export default function StaffERP({
   const handleRegisterPatient = async (e) => {
     e.preventDefault();
     if (!newPatient.name || !newPatient.phone) {
-      return showToast('Full name and phone number are required', 'warning', 'Missing Information');
+      return showToast('Full name and 10-digit mobile phone number are required', 'warning', 'Missing Information');
+    }
+
+    const cleanPhone = newPatient.phone.replace(/\D/g, '');
+    if (cleanPhone.length !== 10) {
+      return showToast('Please enter a valid 10-digit Indian mobile number', 'warning', 'Invalid Mobile Number');
+    }
+    if (!/^[6-9]\d{9}$/.test(cleanPhone)) {
+      return showToast('Indian mobile numbers must start with 6, 7, 8, or 9', 'warning', 'Invalid Mobile Number');
     }
 
     try {
       const created = await api.registerPatient({
         ...newPatient,
+        phone: `+91 ${cleanPhone}`,
         age: parseInt(newPatient.age) || 30
       });
       showToast(`Patient registered successfully! UHID: ${created.uhid}`, 'success', 'Registration Completed');
@@ -563,7 +572,7 @@ export default function StaffERP({
   const curr = hospital?.currency || '₹';
 
   return (
-    <div style={{
+    <div className="erp-main-layout" style={{
       display: 'flex',
       flex: 1,
       minHeight: 0,
@@ -573,7 +582,7 @@ export default function StaffERP({
       backgroundColor: 'var(--bg-app)'
     }}>
       {/* Fixed Left Sidebar Navigation (Flush to left edge, zero gap, locked in place) */}
-      <aside style={{
+      <aside className="erp-sidebar" style={{
         width: '270px',
         flexShrink: 0,
         height: '100%',
@@ -587,7 +596,7 @@ export default function StaffERP({
         zIndex: 20
       }}>
         {/* Doctor Identity Card in Sidebar */}
-        <div style={{
+        <div className="erp-sidebar-doctor-card" style={{
           padding: '0.85rem',
           backgroundColor: isDoctorRole ? 'rgba(2, 132, 199, 0.08)' : 'var(--primary-subtle)',
           borderRadius: 'var(--radius-md)',
@@ -614,7 +623,7 @@ export default function StaffERP({
           </div>
         </div>
 
-        <nav style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem', flex: 1 }}>
+        <nav className="erp-sidebar-nav" style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem', flex: 1 }}>
           <button
             onClick={() => setActiveTab('overview')}
             className={`btn btn-sm ${activeTab === 'overview' ? 'btn-primary' : 'btn-secondary'}`}
@@ -716,13 +725,11 @@ export default function StaffERP({
       </aside>
 
       {/* Main Content Workspace (The ONLY section that scrolls) */}
-      <main style={{
+      <main className="erp-workspace" style={{
         flex: 1,
         minWidth: 0,
         height: '100%',
-        padding: '1.75rem 2rem',
-        overflowY: 'auto',
-        overflowX: 'hidden'
+        overflowY: 'auto'
       }}>
         {/* DOCTOR-WISE WORKSPACE BANNER WITH INSTANT DOCTOR SELECTOR */}
         <div style={{
@@ -1077,24 +1084,24 @@ export default function StaffERP({
                   <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
                     <thead>
                       <tr style={{ background: 'var(--bg-muted)', textAlign: 'left' }}>
-                        <th style={{ padding: '0.75rem' }}>Token</th>
-                        <th style={{ padding: '0.75rem' }}>Patient Name & UHID</th>
-                        <th style={{ padding: '0.75rem' }}>Slot Time</th>
-                        <th style={{ padding: '0.75rem' }}>Chief Complaint</th>
-                        <th style={{ padding: '0.75rem' }}>Current Status</th>
-                        <th style={{ padding: '0.75rem', textAlign: 'right' }}>Doctor Chamber Actions</th>
+                        <th style={{ padding: '0.85rem 0.75rem', width: '75px' }}>Token</th>
+                        <th style={{ padding: '0.85rem 0.75rem', minWidth: '180px' }}>Patient Name & UHID</th>
+                        <th style={{ padding: '0.85rem 0.75rem', width: '95px', whiteSpace: 'nowrap' }}>Slot Time</th>
+                        <th style={{ padding: '0.85rem 0.75rem', minWidth: '180px' }}>Chief Complaint</th>
+                        <th style={{ padding: '0.85rem 1rem', width: '165px', minWidth: '165px', textAlign: 'center' }}>Current Status</th>
+                        <th style={{ padding: '0.85rem 1rem', minWidth: '410px', textAlign: 'right' }}>Doctor Chamber Actions</th>
                       </tr>
                     </thead>
                     <tbody>
                       {displayedAppointments.map(a => (
                         <tr key={a.id} style={{ borderBottom: '1px solid var(--border-subtle)' }}>
-                          <td style={{ padding: '0.75rem', fontWeight: 800, color: 'var(--primary)', fontFamily: 'var(--font-mono)', fontSize: '1.05rem' }}>
+                          <td style={{ padding: '0.85rem 0.75rem', fontWeight: 800, color: 'var(--primary)', fontFamily: 'var(--font-mono)', fontSize: '1.05rem', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>
                             {a.tokenNumber}
                           </td>
-                          <td style={{ padding: '0.75rem' }}>
+                          <td style={{ padding: '0.85rem 0.75rem', verticalAlign: 'middle' }}>
                             <strong style={{ fontSize: '0.95rem' }}>{a.patientName}</strong>
-                            <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', marginTop: '0.1rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                              <span style={{ fontFamily: 'var(--font-mono)', color: 'var(--primary)' }}>{a.uhid}</span>
+                            <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', marginTop: '0.15rem', display: 'flex', alignItems: 'center', gap: '0.35rem', whiteSpace: 'nowrap' }}>
+                              <span style={{ fontFamily: 'var(--font-mono)', color: 'var(--primary)', fontWeight: 600 }}>{a.uhid}</span>
                               <span>•</span>
                               <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.2rem' }}>
                                 <PhoneIcon size={11} color="var(--text-muted)" />
@@ -1102,83 +1109,339 @@ export default function StaffERP({
                               </span>
                             </div>
                           </td>
-                          <td style={{ padding: '0.75rem', fontWeight: 700, color: 'var(--text-main)' }}>
+                          <td style={{ padding: '0.85rem 0.75rem', fontWeight: 700, color: 'var(--text-main)', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>
                             {a.timeSlot}
                           </td>
-                          <td style={{ padding: '0.75rem', color: 'var(--text-muted)', maxWidth: '260px' }}>
+                          <td style={{ padding: '0.85rem 0.75rem', color: 'var(--text-muted)', maxWidth: '240px', verticalAlign: 'middle' }}>
                             {a.chiefComplaint || 'General checkup'}
                           </td>
-                          <td style={{ padding: '0.75rem' }}>
-                            <span className={`badge ${
-                              a.status === 'Calling Next'
-                                ? 'badge-warning'
-                                : (a.status === 'In Consultation' ? 'badge-success' : (a.status === 'Completed' ? 'badge-neutral' : 'badge-primary'))
-                            }`} style={{ fontSize: '0.75rem', padding: '0.25rem 0.65rem' }}>
-                              {a.status === 'Calling Next' ? (
-                                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}>
-                                  <BellIcon size={12} color="#d97706" />
-                                  <span>Calling Next</span>
-                                </span>
-                              ) : a.status === 'In Consultation' ? (
-                                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}>
-                                  <ActivityIcon size={12} color="var(--emerald)" />
-                                  <span>In Consultation</span>
-                                </span>
-                              ) : (
+                          <td style={{ padding: '0.85rem 1rem', width: '165px', minWidth: '165px', textAlign: 'center', verticalAlign: 'middle' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                              <span
+                                style={{
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  gap: '0.4rem',
+                                  width: '144px',
+                                  minWidth: '144px',
+                                  maxWidth: '144px',
+                                  height: '32px',
+                                  minHeight: '32px',
+                                  maxHeight: '32px',
+                                  padding: '0 0.5rem',
+                                  borderRadius: '9999px',
+                                  fontSize: '0.75rem',
+                                  fontWeight: 700,
+                                  textTransform: 'uppercase',
+                                  letterSpacing: '0.03em',
+                                  whiteSpace: 'nowrap',
+                                  boxSizing: 'border-box',
+                                  ...(a.status === 'In Consultation' ? {
+                                    backgroundColor: 'rgba(16, 185, 129, 0.15)',
+                                    color: '#10b981',
+                                    border: '1px solid rgba(16, 185, 129, 0.35)'
+                                  } : a.status === 'Calling Next' ? {
+                                    backgroundColor: 'rgba(245, 158, 11, 0.15)',
+                                    color: '#f59e0b',
+                                    border: '1px solid rgba(245, 158, 11, 0.35)'
+                                  } : a.status === 'Completed' ? {
+                                    backgroundColor: 'rgba(100, 116, 139, 0.15)',
+                                    color: '#94a3b8',
+                                    border: '1px solid rgba(100, 116, 139, 0.3)'
+                                  } : {
+                                    // Waiting
+                                    backgroundColor: 'rgba(2, 132, 199, 0.15)',
+                                    color: '#38bdf8',
+                                    border: '1px solid rgba(2, 132, 199, 0.35)'
+                                  })
+                                }}
+                              >
+                                {a.status === 'In Consultation' && <ActivityIcon size={13} color="#10b981" />}
+                                {a.status === 'Calling Next' && <BellIcon size={13} color="#f59e0b" />}
+                                {a.status === 'Waiting' && <ClockIcon size={13} color="#38bdf8" />}
+                                {a.status === 'Completed' && <CheckCircleIcon size={13} color="#94a3b8" />}
                                 <span>{a.status}</span>
-                              )}
-                            </span>
+                              </span>
+                            </div>
                           </td>
-                          <td style={{ padding: '0.75rem', textAlign: 'right' }}>
-                            <div className="flex justify-end gap-1">
-                              {a.status !== 'Calling Next' && a.status !== 'Completed' && (
+                          <td style={{ padding: '0.85rem 1rem', minWidth: '410px', textAlign: 'right', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>
+                            <div style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'flex-end',
+                              gap: '0.45rem',
+                              whiteSpace: 'nowrap',
+                              flexWrap: 'nowrap'
+                            }}>
+                              {/* Slot 1: Call / Recall (96px x 32px) */}
+                              {a.status === 'In Consultation' ? (
                                 <button
+                                  type="button"
                                   onClick={() => handleUpdateAptStatus(a.id, 'Calling Next')}
                                   className="btn btn-sm btn-secondary"
-                                  style={{ fontSize: '0.75rem', padding: '0.35rem 0.65rem', color: '#d97706', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}
+                                  style={{
+                                    width: '96px',
+                                    minWidth: '96px',
+                                    maxWidth: '96px',
+                                    height: '32px',
+                                    minHeight: '32px',
+                                    maxHeight: '32px',
+                                    padding: '0 0.5rem',
+                                    fontSize: '0.78rem',
+                                    fontWeight: 700,
+                                    whiteSpace: 'nowrap',
+                                    color: '#d97706',
+                                    borderColor: 'rgba(217, 119, 6, 0.35)',
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    gap: '0.35rem',
+                                    boxSizing: 'border-box',
+                                    flexShrink: 0
+                                  }}
+                                  title="Recall patient into chamber"
+                                >
+                                  <BellIcon size={13} color="#d97706" />
+                                  <span>Recall</span>
+                                </button>
+                              ) : a.status === 'Calling Next' ? (
+                                <button
+                                  type="button"
+                                  onClick={() => handleUpdateAptStatus(a.id, 'Calling Next')}
+                                  className="btn btn-sm btn-secondary"
+                                  style={{
+                                    width: '96px',
+                                    minWidth: '96px',
+                                    maxWidth: '96px',
+                                    height: '32px',
+                                    minHeight: '32px',
+                                    maxHeight: '32px',
+                                    padding: '0 0.5rem',
+                                    fontSize: '0.78rem',
+                                    fontWeight: 700,
+                                    whiteSpace: 'nowrap',
+                                    color: '#d97706',
+                                    borderColor: 'rgba(217, 119, 6, 0.35)',
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    gap: '0.35rem',
+                                    boxSizing: 'border-box',
+                                    flexShrink: 0
+                                  }}
+                                  title="Ring chime & call again"
+                                >
+                                  <BellIcon size={13} color="#d97706" />
+                                  <span>Call Again</span>
+                                </button>
+                              ) : a.status === 'Completed' ? (
+                                <div style={{ width: '96px', minWidth: '96px', maxWidth: '96px', height: '32px', flexShrink: 0 }} />
+                              ) : (
+                                <button
+                                  type="button"
+                                  onClick={() => handleUpdateAptStatus(a.id, 'Calling Next')}
+                                  className="btn btn-sm btn-secondary"
+                                  style={{
+                                    width: '96px',
+                                    minWidth: '96px',
+                                    maxWidth: '96px',
+                                    height: '32px',
+                                    minHeight: '32px',
+                                    maxHeight: '32px',
+                                    padding: '0 0.5rem',
+                                    fontSize: '0.78rem',
+                                    fontWeight: 700,
+                                    whiteSpace: 'nowrap',
+                                    color: '#d97706',
+                                    borderColor: 'rgba(217, 119, 6, 0.35)',
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    gap: '0.35rem',
+                                    boxSizing: 'border-box',
+                                    flexShrink: 0
+                                  }}
                                   title="Call patient into chamber"
                                 >
-                                  <BellIcon size={12} color="#d97706" />
+                                  <BellIcon size={13} color="#d97706" />
                                   <span>Call Next</span>
                                 </button>
                               )}
-                              {a.status !== 'In Consultation' && a.status !== 'Completed' && (
+
+                              {/* Slot 2: Consultation Action / State (114px x 32px) */}
+                              {a.status === 'In Consultation' ? (
+                                <span
+                                  style={{
+                                    width: '114px',
+                                    minWidth: '114px',
+                                    maxWidth: '114px',
+                                    height: '32px',
+                                    minHeight: '32px',
+                                    maxHeight: '32px',
+                                    padding: '0 0.5rem',
+                                    fontSize: '0.78rem',
+                                    fontWeight: 700,
+                                    whiteSpace: 'nowrap',
+                                    color: '#10b981',
+                                    backgroundColor: 'rgba(16, 185, 129, 0.12)',
+                                    border: '1px solid rgba(16, 185, 129, 0.35)',
+                                    borderRadius: 'var(--radius-md)',
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    gap: '0.35rem',
+                                    boxSizing: 'border-box',
+                                    flexShrink: 0
+                                  }}
+                                >
+                                  <ActivityIcon size={13} color="#10b981" />
+                                  <span>In Chamber</span>
+                                </span>
+                              ) : a.status === 'Completed' ? (
+                                <div style={{ width: '114px', minWidth: '114px', maxWidth: '114px', height: '32px', flexShrink: 0 }} />
+                              ) : (
                                 <button
+                                  type="button"
                                   onClick={() => handleUpdateAptStatus(a.id, 'In Consultation')}
                                   className="btn btn-sm btn-primary"
-                                  style={{ fontSize: '0.75rem', padding: '0.35rem 0.65rem', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}
-                                  title="Start consultation"
+                                  style={{
+                                    width: '114px',
+                                    minWidth: '114px',
+                                    maxWidth: '114px',
+                                    height: '32px',
+                                    minHeight: '32px',
+                                    maxHeight: '32px',
+                                    padding: '0 0.5rem',
+                                    fontSize: '0.78rem',
+                                    fontWeight: 700,
+                                    whiteSpace: 'nowrap',
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    gap: '0.35rem',
+                                    boxSizing: 'border-box',
+                                    flexShrink: 0
+                                  }}
+                                  title="Start patient consultation"
                                 >
                                   <StethoscopeIcon size={13} color="#ffffff" />
                                   <span>Start Consult</span>
                                 </button>
                               )}
-                              {a.status !== 'Completed' && (
+
+                              {/* Slot 3: Done Action (78px x 32px) */}
+                              {a.status === 'Completed' ? (
+                                <span
+                                  style={{
+                                    width: '78px',
+                                    minWidth: '78px',
+                                    maxWidth: '78px',
+                                    height: '32px',
+                                    minHeight: '32px',
+                                    maxHeight: '32px',
+                                    fontSize: '0.78rem',
+                                    fontWeight: 700,
+                                    whiteSpace: 'nowrap',
+                                    color: 'var(--emerald)',
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    gap: '0.25rem',
+                                    boxSizing: 'border-box',
+                                    flexShrink: 0
+                                  }}
+                                >
+                                  <CheckCircleIcon size={13} color="var(--emerald)" />
+                                  <span>Done</span>
+                                </span>
+                              ) : (
                                 <button
+                                  type="button"
                                   onClick={() => handleUpdateAptStatus(a.id, 'Completed')}
                                   className="btn btn-sm btn-secondary"
-                                  style={{ fontSize: '0.75rem', padding: '0.35rem 0.65rem', color: 'var(--emerald)', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}
-                                  title="Mark completed"
+                                  style={{
+                                    width: '78px',
+                                    minWidth: '78px',
+                                    maxWidth: '78px',
+                                    height: '32px',
+                                    minHeight: '32px',
+                                    maxHeight: '32px',
+                                    padding: '0 0.5rem',
+                                    fontSize: '0.78rem',
+                                    fontWeight: 700,
+                                    whiteSpace: 'nowrap',
+                                    color: 'var(--emerald)',
+                                    borderColor: 'rgba(16, 185, 129, 0.35)',
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    gap: '0.25rem',
+                                    boxSizing: 'border-box',
+                                    flexShrink: 0
+                                  }}
+                                  title="Mark consultation completed"
                                 >
                                   <CheckCircleIcon size={13} color="var(--emerald)" />
                                   <span>Done</span>
                                 </button>
                               )}
+
+                              {/* Slot 4: Rx Pad Action (86px x 32px) */}
                               <button
+                                type="button"
                                 onClick={() => handleOpenRxForPatient(a)}
                                 className="btn btn-sm btn-secondary"
-                                style={{ fontSize: '0.75rem', padding: '0.35rem 0.65rem', fontWeight: 700, borderColor: 'var(--primary)', color: 'var(--primary)', display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}
+                                style={{
+                                  width: '86px',
+                                  minWidth: '86px',
+                                  maxWidth: '86px',
+                                  height: '32px',
+                                  minHeight: '32px',
+                                  maxHeight: '32px',
+                                  padding: '0 0.5rem',
+                                  fontSize: '0.78rem',
+                                  fontWeight: 700,
+                                  whiteSpace: 'nowrap',
+                                  borderColor: 'var(--primary)',
+                                  color: 'var(--primary)',
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  gap: '0.35rem',
+                                  boxSizing: 'border-box',
+                                  flexShrink: 0
+                                }}
                                 title="Write digital prescription for this patient"
                               >
                                 <RecordsIcon size={13} color="var(--primary)" />
                                 <span>Rx Pad</span>
                               </button>
+
+                              {/* Slot 5: Admin Delete Action (76px x 32px) */}
                               {!isDoctorRole && (
                                 <button
                                   type="button"
                                   onClick={() => handleDeleteAppointment(a.id)}
                                   className="btn btn-sm btn-danger"
-                                  style={{ fontSize: '0.75rem', padding: '0.35rem 0.6rem', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}
+                                  style={{
+                                    width: '76px',
+                                    minWidth: '76px',
+                                    maxWidth: '76px',
+                                    height: '32px',
+                                    minHeight: '32px',
+                                    maxHeight: '32px',
+                                    padding: '0 0.4rem',
+                                    fontSize: '0.78rem',
+                                    fontWeight: 700,
+                                    whiteSpace: 'nowrap',
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    gap: '0.3rem',
+                                    boxSizing: 'border-box',
+                                    flexShrink: 0
+                                  }}
                                   title="Admin cancel & delete appointment case"
                                 >
                                   <TrashIcon size={13} color="#ffffff" />
@@ -1416,7 +1679,15 @@ export default function StaffERP({
               Generates a permanent Unique Health Identification Number (UHID)
             </p>
 
-            <form onSubmit={handleRegisterPatient} className="card">
+            <form
+              onSubmit={handleRegisterPatient}
+              className="card card-static card-no-hover"
+              style={{
+                transform: 'none',
+                cursor: 'default',
+                transition: 'none'
+              }}
+            >
               <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: '1rem' }}>
                 <div className="form-group">
                   <label className="form-label">Patient Full Name</label>
@@ -1430,15 +1701,50 @@ export default function StaffERP({
                   />
                 </div>
                 <div className="form-group">
-                  <label className="form-label">Phone Number</label>
-                  <input
-                    type="tel"
-                    value={newPatient.phone}
-                    onChange={(e) => setNewPatient({ ...newPatient, phone: e.target.value })}
-                    placeholder="e.g. 9811234501"
-                    className="form-control"
-                    required
-                  />
+                  <label className="form-label">Phone Number (India)</label>
+                  <div style={{ display: 'flex', alignItems: 'stretch' }}>
+                    <span style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '0.25rem',
+                      padding: '0.65rem 0.75rem',
+                      backgroundColor: 'var(--bg-muted)',
+                      border: '1px solid var(--border-subtle)',
+                      borderRight: 'none',
+                      borderTopLeftRadius: 'var(--radius-md)',
+                      borderBottomLeftRadius: 'var(--radius-md)',
+                      fontWeight: 800,
+                      fontSize: '0.85rem',
+                      color: 'var(--text-main)',
+                      userSelect: 'none',
+                      whiteSpace: 'nowrap'
+                    }}>
+                      🇮🇳 +91
+                    </span>
+                    <input
+                      type="tel"
+                      value={newPatient.phone}
+                      onChange={(e) => {
+                        const val = e.target.value.replace(/\D/g, '').slice(0, 10);
+                        setNewPatient({ ...newPatient, phone: val });
+                      }}
+                      placeholder="10-digit number (e.g. 9811234501)"
+                      className="form-control"
+                      style={{
+                        borderTopLeftRadius: 0,
+                        borderBottomLeftRadius: 0
+                      }}
+                      maxLength={10}
+                      pattern="[6-9][0-9]{9}"
+                      title="Enter 10-digit Indian mobile number"
+                      required
+                    />
+                  </div>
+                  {newPatient.phone && newPatient.phone.length < 10 && (
+                    <span style={{ fontSize: '0.72rem', color: '#f59e0b', marginTop: '0.2rem' }}>
+                      {10 - newPatient.phone.length} more digit{10 - newPatient.phone.length > 1 ? 's' : ''} required
+                    </span>
+                  )}
                 </div>
               </div>
 
@@ -1512,7 +1818,15 @@ export default function StaffERP({
             </form>
 
             {/* Registered Patients Directory with Admin Delete Privileges */}
-            <div className="card" style={{ marginTop: '2rem' }}>
+            <div
+              className="card card-static card-no-hover"
+              style={{
+                marginTop: '2rem',
+                transform: 'none',
+                cursor: 'default',
+                transition: 'none'
+              }}
+            >
               <div className="flex items-center justify-between" style={{ marginBottom: '1rem', flexWrap: 'wrap', gap: '0.75rem' }}>
                 <div>
                   <h3 style={{ fontSize: '1.15rem', fontWeight: 800, margin: 0 }}>
@@ -1653,48 +1967,203 @@ export default function StaffERP({
               </div>
             )}
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(230px, 1fr))', gap: '1.25rem' }}>
               {beds.map(bed => (
                 <div
                   key={bed.id}
                   className="card"
                   style={{
-                    padding: '1rem',
-                    border: `2px solid ${bed.status === 'Occupied' ? 'rgba(244, 63, 94, 0.4)' : (bed.status === 'Available' ? 'rgba(16, 185, 129, 0.4)' : 'rgba(245, 158, 11, 0.4)')}`,
-                    backgroundColor: bed.status === 'Occupied' ? 'rgba(244, 63, 94, 0.03)' : (bed.status === 'Available' ? 'rgba(16, 185, 129, 0.03)' : 'rgba(245, 158, 11, 0.03)')
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'space-between',
+                    minHeight: '230px',
+                    height: '100%',
+                    padding: '1.15rem',
+                    borderRadius: 'var(--radius-lg)',
+                    border: `2px solid ${
+                      bed.status === 'Occupied'
+                        ? 'rgba(244, 63, 94, 0.4)'
+                        : (bed.status === 'Available' ? 'rgba(16, 185, 129, 0.4)' : 'rgba(245, 158, 11, 0.4)')
+                    }`,
+                    backgroundColor:
+                      bed.status === 'Occupied'
+                        ? 'rgba(244, 63, 94, 0.035)'
+                        : (bed.status === 'Available' ? 'rgba(16, 185, 129, 0.035)' : 'rgba(245, 158, 11, 0.035)'),
+                    boxSizing: 'border-box'
                   }}
                 >
-                  <div className="flex items-center justify-between" style={{ marginBottom: '0.4rem' }}>
-                    <span style={{ fontWeight: 800, fontFamily: 'var(--font-mono)', fontSize: '1rem' }}>{bed.id}</span>
-                    <span className={`badge ${bed.status === 'Occupied' ? 'badge-danger' : (bed.status === 'Available' ? 'badge-success' : 'badge-warning')}`} style={{ fontSize: '0.65rem' }}>
-                      {bed.status}
-                    </span>
+                  {/* Top Header: Bed ID, Bed Icon, Status Badge & Room Pricing */}
+                  <div>
+                    <div className="flex items-center justify-between" style={{ marginBottom: '0.45rem' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+                        <div style={{
+                          width: '28px',
+                          height: '28px',
+                          borderRadius: '6px',
+                          backgroundColor:
+                            bed.status === 'Occupied'
+                              ? 'rgba(244, 63, 94, 0.12)'
+                              : (bed.status === 'Available' ? 'rgba(16, 185, 129, 0.12)' : 'rgba(245, 158, 11, 0.12)'),
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center'
+                        }}>
+                          <BedIcon
+                            size={15}
+                            color={bed.status === 'Occupied' ? '#f43f5e' : (bed.status === 'Available' ? '#10b981' : '#f59e0b')}
+                          />
+                        </div>
+                        <span style={{ fontWeight: 800, fontFamily: 'var(--font-mono)', fontSize: '1rem', color: 'var(--text-main)' }}>
+                          {bed.id}
+                        </span>
+                      </div>
+                      <span
+                        className={`badge ${
+                          bed.status === 'Occupied'
+                            ? 'badge-danger'
+                            : (bed.status === 'Available' ? 'badge-success' : 'badge-warning')
+                        }`}
+                        style={{ fontSize: '0.68rem', padding: '0.2rem 0.55rem', fontWeight: 700 }}
+                      >
+                        {bed.status}
+                      </span>
+                    </div>
+
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.78rem', marginBottom: '0.85rem' }}>
+                      <span style={{ color: 'var(--text-muted)', fontWeight: 500 }}>{bed.ward}</span>
+                      <span style={{ fontWeight: 800, color: 'var(--primary)', fontFamily: 'var(--font-mono)' }}>
+                        {curr}{bed.rate}<span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 500 }}>/day</span>
+                      </span>
+                    </div>
                   </div>
 
-                  <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{bed.ward}</p>
-                  <p style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--primary)', marginBottom: '0.5rem' }}>{curr}{bed.rate}/day</p>
+                  {/* Middle Content Box: Uniform Height in EVERY Box */}
+                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                    {bed.status === 'Occupied' ? (
+                      <div style={{
+                        height: '68px',
+                        padding: '0.55rem 0.75rem',
+                        backgroundColor: 'rgba(244, 63, 94, 0.07)',
+                        border: '1px solid rgba(244, 63, 94, 0.22)',
+                        borderRadius: 'var(--radius-md)',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'center',
+                        boxSizing: 'border-box'
+                      }}>
+                        <div style={{
+                          fontSize: '0.86rem',
+                          fontWeight: 800,
+                          color: 'var(--text-main)',
+                          whiteSpace: 'nowrap',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis'
+                        }}>
+                          👤 {bed.patientName || 'Admitted Patient'}
+                        </div>
+                        <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '0.2rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                          Admitted: <strong style={{ color: 'var(--text-main)' }}>{bed.admittedOn || 'Active Admission'}</strong>
+                        </div>
+                      </div>
+                    ) : bed.status === 'Available' ? (
+                      <div style={{
+                        height: '68px',
+                        padding: '0.55rem 0.75rem',
+                        backgroundColor: 'rgba(16, 185, 129, 0.07)',
+                        border: '1px dashed rgba(16, 185, 129, 0.35)',
+                        borderRadius: 'var(--radius-md)',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'center',
+                        boxSizing: 'border-box'
+                      }}>
+                        <div style={{
+                          fontSize: '0.84rem',
+                          fontWeight: 700,
+                          color: '#10b981',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.35rem'
+                        }}>
+                          <CheckCircleIcon size={14} color="#10b981" />
+                          <span>Ready for Patient</span>
+                        </div>
+                        <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '0.2rem' }}>
+                          Sanitized & Prepared for Admission
+                        </div>
+                      </div>
+                    ) : (
+                      <div style={{
+                        height: '68px',
+                        padding: '0.55rem 0.75rem',
+                        backgroundColor: 'rgba(245, 158, 11, 0.07)',
+                        border: '1px dashed rgba(245, 158, 11, 0.35)',
+                        borderRadius: 'var(--radius-md)',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'center',
+                        boxSizing: 'border-box'
+                      }}>
+                        <div style={{
+                          fontSize: '0.84rem',
+                          fontWeight: 700,
+                          color: '#f59e0b',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.35rem'
+                        }}>
+                          <ClockIcon size={14} color="#f59e0b" />
+                          <span>Housekeeping Active</span>
+                        </div>
+                        <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '0.2rem' }}>
+                          Under Sanitization & Cleaning
+                        </div>
+                      </div>
+                    )}
+                  </div>
 
-                  {bed.status === 'Occupied' ? (
-                    <div>
-                      <div style={{ fontSize: '0.85rem', fontWeight: 700 }}>👤 {bed.patientName}</div>
-                      <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>Admitted: {bed.admittedOn}</div>
+                  {/* Bottom Action Button: Uniform Position & Dimensions in EVERY Box */}
+                  <div style={{ marginTop: '0.85rem' }}>
+                    {bed.status === 'Occupied' ? (
                       <button
+                        type="button"
                         onClick={() => handleDischargeBed(bed.id)}
                         className="btn btn-danger btn-sm"
-                        style={{ width: '100%', marginTop: '0.75rem', fontSize: '0.75rem', padding: '0.3rem' }}
+                        style={{
+                          width: '100%',
+                          height: '34px',
+                          fontSize: '0.8rem',
+                          fontWeight: 700,
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '0.35rem',
+                          boxSizing: 'border-box'
+                        }}
                       >
-                        Discharge Patient
+                        <span>Discharge Patient</span>
                       </button>
-                    </div>
-                  ) : (
-                    <button
-                      onClick={() => setAdmitBedId(bed.id)}
-                      className="btn btn-primary btn-sm"
-                      style={{ width: '100%', marginTop: '0.75rem', fontSize: '0.75rem', padding: '0.3rem' }}
-                    >
-                      Admit Patient
-                    </button>
-                  )}
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => setAdmitBedId(bed.id)}
+                        className="btn btn-primary btn-sm"
+                        style={{
+                          width: '100%',
+                          height: '34px',
+                          fontSize: '0.8rem',
+                          fontWeight: 700,
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '0.35rem',
+                          boxSizing: 'border-box'
+                        }}
+                      >
+                        <span>Admit Patient</span>
+                      </button>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>
@@ -2096,16 +2565,35 @@ export default function StaffERP({
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.65rem' }}>
                     <div className="form-group" style={{ margin: 0 }}>
                       <label className="form-label" style={{ fontSize: '0.8rem', fontWeight: 700 }}>
-                        Phone:
+                        Mobile Phone (India):
                       </label>
-                      <input
-                        type="tel"
-                        value={newUserForm.phone}
-                        onChange={(e) => setNewUserForm({ ...newUserForm, phone: e.target.value })}
-                        placeholder="+91 98111-00000"
-                        className="form-control"
-                        style={{ fontSize: '0.85rem' }}
-                      />
+                      <div style={{ display: 'flex', alignItems: 'stretch' }}>
+                        <span style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          padding: '0.45rem 0.6rem',
+                          backgroundColor: 'var(--bg-muted)',
+                          border: '1px solid var(--border-subtle)',
+                          borderRight: 'none',
+                          borderTopLeftRadius: 'var(--radius-md)',
+                          borderBottomLeftRadius: 'var(--radius-md)',
+                          fontWeight: 700,
+                          fontSize: '0.78rem',
+                          color: 'var(--text-main)',
+                          userSelect: 'none'
+                        }}>
+                          🇮🇳 +91
+                        </span>
+                        <input
+                          type="tel"
+                          value={newUserForm.phone}
+                          onChange={(e) => setNewUserForm({ ...newUserForm, phone: e.target.value.replace(/\D/g, '').slice(0, 10) })}
+                          placeholder="10-digit number"
+                          className="form-control"
+                          style={{ borderTopLeftRadius: 0, borderBottomLeftRadius: 0, fontSize: '0.85rem' }}
+                          maxLength={10}
+                        />
+                      </div>
                     </div>
                     <div className="form-group" style={{ margin: 0 }}>
                       <label className="form-label" style={{ fontSize: '0.8rem', fontWeight: 700 }}>

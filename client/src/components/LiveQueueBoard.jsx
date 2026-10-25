@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { api } from '../services/api';
 import { BellIcon, StethoscopeIcon, ActivityIcon, ClockIcon, CheckCircleIcon } from './Icons';
 
-export default function LiveQueueBoard({ doctors, appointments: initialAppointments }) {
+export default function LiveQueueBoard({ doctors = [], appointments: initialAppointments = [] }) {
   const [appointments, setAppointments] = useState(initialAppointments || []);
   const [lastAnnouncement, setLastAnnouncement] = useState('Welcome to PulseAura OPD. Please watch the board for your token.');
   const [filterStatus, setFilterStatus] = useState('ALL');
@@ -12,14 +12,14 @@ export default function LiveQueueBoard({ doctors, appointments: initialAppointme
     const fetchLatestQueue = async () => {
       try {
         const latest = await api.getAppointments();
-        setAppointments(latest);
+        setAppointments(latest || []);
 
         // Check if there is an active 'Calling Next' patient and announce
-        const calling = latest.find(a => a.status === 'Calling Next');
+        const calling = (latest || []).find(a => a.status === 'Calling Next');
         if (calling) {
           setLastAnnouncement(`Now Calling Token ${calling.tokenNumber} (${calling.patientName}) to ${calling.opdRoom} with ${calling.doctorName}`);
         } else {
-          const inConsult = latest.find(a => a.status === 'In Consultation');
+          const inConsult = (latest || []).find(a => a.status === 'In Consultation');
           if (inConsult) {
             setLastAnnouncement(`Current Consultation: Token ${inConsult.tokenNumber} inside ${inConsult.opdRoom} (${inConsult.doctorName})`);
           }
@@ -34,7 +34,7 @@ export default function LiveQueueBoard({ doctors, appointments: initialAppointme
   }, []);
 
   // Compute live status per doctor
-  const doctorStatuses = doctors.map(doc => {
+  const doctorStatuses = (doctors || []).map(doc => {
     const docApts = appointments.filter(a => a.doctorId === doc.id);
     const inConsult = docApts.find(a => a.status === 'In Consultation');
     const callingNext = docApts.find(a => a.status === 'Calling Next');
@@ -92,11 +92,10 @@ export default function LiveQueueBoard({ doctors, appointments: initialAppointme
     }}>
       <div className="container">
         {/* Digital Lounge Queue Board Header */}
-        <div style={{
+        <div className="live-queue-board-card" style={{
           background: 'linear-gradient(135deg, #090d16, #0f172a)',
           border: '1px solid rgba(255, 255, 255, 0.12)',
           borderRadius: 'var(--radius-xl)',
-          padding: '2rem',
           color: '#ffffff',
           boxShadow: 'var(--shadow-xl)'
         }}>
@@ -128,7 +127,7 @@ export default function LiveQueueBoard({ doctors, appointments: initialAppointme
             </div>
 
             {/* Filter Tabs */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2" style={{ flexWrap: 'wrap' }}>
               <button
                 onClick={() => setFilterStatus('ALL')}
                 className={`btn btn-sm ${filterStatus === 'ALL' ? 'btn-primary' : 'btn-secondary'}`}
@@ -174,7 +173,7 @@ export default function LiveQueueBoard({ doctors, appointments: initialAppointme
           </div>
 
           {/* Multi-Doctor Chamber Status Grid */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(290px, 1fr))', gap: '1.25rem' }}>
+          <div className="live-queue-doctor-grid">
             {filteredDoctors.map(({ doctor, currentAction, activeToken, activePatient, statusClass, waitingCount, completedCount, nextWaiting }) => {
               // Color themes for different doctor states
               const isCalling = statusClass === 'calling';
@@ -191,7 +190,7 @@ export default function LiveQueueBoard({ doctors, appointments: initialAppointme
                   borderRadius: 'var(--radius-lg)',
                   padding: '1.35rem',
                   boxShadow: isCalling ? '0 0 25px rgba(245, 158, 11, 0.25)' : 'none',
-                  transition: 'all 0.3s ease'
+                  transition: 'background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease'
                 }}>
                   {/* Chamber Room & Status Pill */}
                   <div className="flex items-center justify-between" style={{ marginBottom: '0.75rem' }}>

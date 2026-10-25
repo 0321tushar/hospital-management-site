@@ -14,6 +14,7 @@ import { SirenIcon, PhoneIcon, DropletIcon, StethoscopeIcon, LockIcon, UnlockIco
 
 export default function App() {
   const [activeMode, setActiveMode] = useState('public'); // 'public' | 'erp'
+  const [publicView, setPublicView] = useState('home'); // 'home' | 'queue'
   const [darkMode, setDarkMode] = useState(false);
   const [hospital, setHospital] = useState(null);
   const [doctors, setDoctors] = useState([]);
@@ -86,9 +87,11 @@ export default function App() {
   const handleStaffLogout = () => {
     sessionStorage.removeItem('pulseaura_staff_auth');
     sessionStorage.removeItem('pulseaura_staff_session');
+    sessionStorage.removeItem('pulseaura_jwt_token');
     setIsStaffAuthenticated(false);
     setStaffSession({});
     setActiveMode('public');
+    setPublicView('home');
   };
 
   return (
@@ -104,8 +107,16 @@ export default function App() {
     >
       <Navbar
         activeMode={activeMode}
+        publicView={publicView}
+        onSelectPublicView={(v) => {
+          setActiveMode('public');
+          setPublicView(v);
+        }}
         onRequestERPMode={handleRequestERPMode}
-        onBackToPublic={() => setActiveMode('public')}
+        onBackToPublic={() => {
+          setActiveMode('public');
+          setPublicView('home');
+        }}
         isStaffAuthenticated={isStaffAuthenticated}
         hospital={hospital}
         darkMode={darkMode}
@@ -114,30 +125,75 @@ export default function App() {
 
       {activeMode === 'public' ? (
         <main style={{ flex: 1 }}>
-          <HeroBooking
-            doctors={doctors}
-            hospital={hospital}
-            onAppointmentBooked={handleAppointmentBooked}
-            selectedDoctorForBooking={selectedDoctorForBooking}
-          />
-          <LiveQueueBoard
-            doctors={doctors}
-            appointments={appointments}
-          />
-          <SpecialtiesGrid />
-          <DoctorDirectory
-            doctors={doctors}
-            hospital={hospital}
-            onSelectDoctorForBooking={(doc) => {
-              setSelectedDoctorForBooking(doc);
-              const el = document.getElementById('booking');
-              if (el) el.scrollIntoView({ behavior: 'smooth' });
-            }}
-          />
-          <PatientPortal
-            hospital={hospital}
-            onPrintDocument={(doc) => setActivePrintDoc(doc)}
-          />
+          {publicView === 'queue' ? (
+            <div>
+              {/* Back Navigation Bar for Queue Display */}
+              <div style={{
+                backgroundColor: 'var(--bg-surface)',
+                borderBottom: '1px solid var(--border-subtle)',
+                padding: '0.85rem 0'
+              }}>
+                <div className="container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.75rem' }}>
+                  <button
+                    onClick={() => {
+                      setPublicView('home');
+                      window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }}
+                    className="btn btn-secondary btn-sm"
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', fontWeight: 700 }}
+                  >
+                    <span>← Back to Home / Book Consultation</span>
+                  </button>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: '0.825rem' }}>
+                    <span style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '0.4rem',
+                      color: '#10b981',
+                      fontWeight: 700,
+                      backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                      padding: '0.25rem 0.65rem',
+                      borderRadius: '9999px',
+                      border: '1px solid rgba(16, 185, 129, 0.25)'
+                    }}>
+                      <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#10b981', display: 'inline-block' }} />
+                      Real-Time Digital Lounge Signage
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <LiveQueueBoard
+                doctors={doctors}
+                appointments={appointments}
+              />
+            </div>
+          ) : (
+            <>
+              <HeroBooking
+                doctors={doctors}
+                hospital={hospital}
+                onAppointmentBooked={handleAppointmentBooked}
+                selectedDoctorForBooking={selectedDoctorForBooking}
+                onViewLiveQueue={() => setPublicView('queue')}
+                darkMode={darkMode}
+              />
+              <SpecialtiesGrid />
+              <DoctorDirectory
+                doctors={doctors}
+                hospital={hospital}
+                onSelectDoctorForBooking={(doc) => {
+                  setSelectedDoctorForBooking(doc);
+                  const el = document.getElementById('booking');
+                  if (el) el.scrollIntoView({ behavior: 'smooth' });
+                }}
+              />
+              <PatientPortal
+                hospital={hospital}
+                onPrintDocument={(doc) => setActivePrintDoc(doc)}
+              />
+            </>
+          )}
 
           {/* Footer */}
           <footer style={{ backgroundColor: '#090d16', color: '#94a3b8', padding: '4rem 0 2rem', borderTop: '1px solid #1e293b' }}>
@@ -187,20 +243,16 @@ export default function App() {
               </div>
 
               <div>
-                <h4 style={{ color: '#ffffff', fontSize: '1rem', marginBottom: '0.85rem' }}>Staff Operations</h4>
-                <p style={{ fontSize: '0.85rem', marginBottom: '0.75rem' }}>Protected portal for doctors, clinicians, and administration.</p>
-                <button
-                  onClick={handleRequestERPMode}
-                  className="btn btn-primary btn-sm"
-                  style={{ display: 'inline-flex', alignItems: 'center', gap: '0.45rem' }}
-                >
-                  {isStaffAuthenticated ? <UnlockIcon size={14} color="#ffffff" /> : <LockIcon size={14} color="#ffffff" />}
-                  <span>{isStaffAuthenticated ? 'Open Staff ERP Desk' : 'Unlock Staff ERP Desk (PIN)'}</span>
-                </button>
+                <h4 style={{ color: '#ffffff', fontSize: '1rem', marginBottom: '0.85rem' }}>OPD Consultation Hours</h4>
+                <p style={{ fontSize: '0.85rem', lineHeight: 1.6, color: '#94a3b8' }}>
+                  Monday – Saturday: 08:00 AM – 08:00 PM<br />
+                  Sunday: 09:00 AM – 02:00 PM<br />
+                  <span style={{ color: '#34d399', fontWeight: 700 }}>Emergency & Trauma: Open 24/7</span>
+                </p>
               </div>
             </div>
 
-            <div className="container" style={{ borderTop: '1px solid #1e293b', paddingTop: '1.5rem', fontSize: '0.8rem', display: 'flex', justifyContent: 'space-between', color: '#64748b' }}>
+            <div className="container" style={{ borderTop: '1px solid #1e293b', paddingTop: '1.5rem', fontSize: '0.8rem', display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.75rem', color: '#64748b' }}>
               <div>© 2026 {hospital?.name}. All rights reserved. MERN Stack Health Platform.</div>
               <div>Patient Confidentiality • NABH Standard • HIPAA Ready</div>
             </div>

@@ -6,6 +6,15 @@
 
 const API_BASE = 'http://localhost:5000/api';
 
+// Helper to provide Authorization Bearer token header for authenticated staff requests
+export const getAuthHeaders = () => {
+  const token = typeof sessionStorage !== 'undefined' ? sessionStorage.getItem('pulseaura_jwt_token') : null;
+  return {
+    'Content-Type': 'application/json',
+    ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+  };
+};
+
 export const api = {
   // Hospital Settings
   async getHospital() {
@@ -202,8 +211,17 @@ export const api = {
       if (res.ok) return await res.json();
     } catch (e) {}
     const patients = await this.getPatients();
-    const q = query.toLowerCase();
-    return patients.find(p => p.uhid.toLowerCase().includes(q) || p.phone.includes(q) || p.name.toLowerCase().includes(q)) || null;
+    const q = query.toLowerCase().trim();
+    const digitsQ = q.replace(/\D/g, '');
+    return patients.find(p => {
+      const pDigits = (p.phone || '').replace(/\D/g, '');
+      const matchesPhone = digitsQ.length >= 6 && (pDigits.includes(digitsQ) || digitsQ.includes(pDigits.slice(-10)));
+      return (
+        p.uhid.toLowerCase().includes(q) ||
+        matchesPhone ||
+        p.name.toLowerCase().includes(q)
+      );
+    }) || null;
   },
 
   async registerPatient(data) {
@@ -543,7 +561,9 @@ export const api = {
   // Staff & User Accounts Management (Admin)
   async getStaffUsers() {
     try {
-      const res = await fetch(`${API_BASE}/staff-users`);
+      const res = await fetch(`${API_BASE}/staff-users`, {
+        headers: getAuthHeaders()
+      });
       if (res.ok) return await res.json();
     } catch (e) {}
     return [
@@ -563,7 +583,7 @@ export const api = {
     try {
       const res = await fetch(`${API_BASE}/staff-users`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
         body: JSON.stringify(data)
       });
       if (res.ok) return await res.json();
@@ -575,7 +595,10 @@ export const api = {
 
   async deleteStaffUser(id) {
     try {
-      const res = await fetch(`${API_BASE}/staff-users/${id}`, { method: 'DELETE' });
+      const res = await fetch(`${API_BASE}/staff-users/${id}`, {
+        method: 'DELETE',
+        headers: getAuthHeaders()
+      });
       if (res.ok) return await res.json();
     } catch (e) {}
     return { success: true, id };
@@ -588,7 +611,13 @@ export const api = {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
-      if (res.ok) return await res.json();
+      if (res.ok) {
+        const data = await res.json();
+        if (data?.token && typeof sessionStorage !== 'undefined') {
+          sessionStorage.setItem('pulseaura_jwt_token', data.token);
+        }
+        return data;
+      }
     } catch (e) {}
     if (payload.pin === '1234') {
       return {

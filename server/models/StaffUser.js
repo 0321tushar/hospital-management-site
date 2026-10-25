@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import bcrypt from 'bcryptjs';
 
 const staffUserSchema = new mongoose.Schema({
   id: { type: String, required: true, unique: true },
@@ -18,5 +19,25 @@ const staffUserSchema = new mongoose.Schema({
   email: { type: String, default: 'staff@pulseaura.org' },
   status: { type: String, default: 'Active' }
 }, { timestamps: true });
+
+// Pre-save hook: Hash staff PIN using bcrypt before saving to MongoDB
+staffUserSchema.pre('save', async function (next) {
+  if (!this.isModified('pin')) return next();
+  try {
+    const salt = await bcrypt.genSalt(10);
+    this.pin = await bcrypt.hash(this.pin, salt);
+    next();
+  } catch (err) {
+    next(err);
+  }
+});
+
+// Compare entered plain PIN with hashed PIN (supports plain text migration/fallback)
+staffUserSchema.methods.matchPin = async function (enteredPin) {
+  if (!this.pin.startsWith('$2')) {
+    return String(this.pin) === String(enteredPin);
+  }
+  return await bcrypt.compare(String(enteredPin), this.pin);
+};
 
 export const StaffUser = mongoose.models.StaffUser || mongoose.model('StaffUser', staffUserSchema);

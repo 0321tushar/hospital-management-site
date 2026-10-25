@@ -68,16 +68,16 @@ export default function PatientPortal({ onPrintDocument, hospital }) {
             Enter your UHID or registered phone number to view prescriptions, bills, and test reports.
           </p>
 
-          <form onSubmit={handleSearch} className="flex gap-2" style={{ maxWidth: '520px', margin: '1.5rem auto 0' }}>
+          <form onSubmit={handleSearch} className="flex gap-2 portal-search-form" style={{ maxWidth: '520px', margin: '1.5rem auto 0', flexWrap: 'wrap' }}>
             <input
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="e.g. PA-2026-0056 or 9718022134"
+              placeholder="Enter 10-digit mobile (e.g. 9811234501) or UHID"
               className="form-control"
-              style={{ padding: '0.75rem 1rem' }}
+              style={{ padding: '0.75rem 1rem', flex: '1 1 240px' }}
             />
-            <button type="submit" disabled={loading} className="btn btn-primary" style={{ whiteSpace: 'nowrap' }}>
+            <button type="submit" disabled={loading} className="btn btn-primary" style={{ whiteSpace: 'nowrap', flex: '1 1 120px' }}>
               {loading ? 'Searching...' : 'Access Records'}
             </button>
           </form>
@@ -88,7 +88,7 @@ export default function PatientPortal({ onPrintDocument, hospital }) {
             {patient ? (
               <>
                 <div className="card" style={{ marginBottom: '1.5rem', borderLeft: '4px solid var(--primary)' }}>
-                  <div className="flex items-center justify-between" style={{ marginBottom: '1rem' }}>
+                  <div className="flex items-center justify-between" style={{ marginBottom: '1rem', flexWrap: 'wrap', gap: '0.75rem' }}>
                     <div>
                       <span className="badge badge-primary">{patient.uhid}</span>
                       <h3 style={{ fontSize: '1.35rem', fontWeight: 800, marginTop: '0.35rem' }}>{patient.name}</h3>
@@ -112,7 +112,7 @@ export default function PatientPortal({ onPrintDocument, hospital }) {
                 </div>
 
                 {/* Tabs */}
-                <div className="flex gap-2" style={{ borderBottom: '1px solid var(--border-subtle)', marginBottom: '1.5rem' }}>
+                <div className="flex gap-2" style={{ borderBottom: '1px solid var(--border-subtle)', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
                   <button
                     onClick={() => setActiveTab('rx')}
                     className={`btn btn-sm ${activeTab === 'rx' ? 'btn-primary' : 'btn-secondary'}`}

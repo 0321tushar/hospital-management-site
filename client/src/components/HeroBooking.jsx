@@ -20,7 +20,7 @@ const HERO_IMAGES = [
   }
 ];
 
-export default function HeroBooking({ doctors, hospital, onAppointmentBooked, selectedDoctorForBooking }) {
+export default function HeroBooking({ doctors, hospital, onAppointmentBooked, selectedDoctorForBooking, onViewLiveQueue, darkMode }) {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [department, setDepartment] = useState('');
   const [doctorId, setDoctorId] = useState('');
@@ -75,19 +75,29 @@ export default function HeroBooking({ doctors, hospital, onAppointmentBooked, se
       setBookingAlert('Please choose an available appointment time slot.');
       return;
     }
-    if (!patientName || !patientPhone) {
-      setBookingAlert('Please fill in both patient full name and mobile phone number.');
+    const cleanPhone = (patientPhone || '').replace(/\D/g, '');
+    if (!patientName || !cleanPhone) {
+      setBookingAlert('Please fill in both patient full name and 10-digit mobile phone number.');
+      return;
+    }
+    if (cleanPhone.length !== 10) {
+      setBookingAlert('Please enter a valid 10-digit Indian mobile number.');
+      return;
+    }
+    if (!/^[6-9]\d{9}$/.test(cleanPhone)) {
+      setBookingAlert('Indian mobile numbers must start with 6, 7, 8, or 9.');
       return;
     }
 
     setBookingAlert(null);
     setLoading(true);
     try {
-      let patient = await api.searchPatient(patientPhone);
+      const phoneToSave = `+91 ${cleanPhone}`;
+      let patient = await api.searchPatient(cleanPhone);
       if (!patient) {
         patient = await api.registerPatient({
           name: patientName,
-          phone: patientPhone,
+          phone: phoneToSave,
           age: parseInt(patientAge) || 30,
           gender: patientGender,
           bloodGroup: 'B+',
@@ -98,7 +108,7 @@ export default function HeroBooking({ doctors, hospital, onAppointmentBooked, se
       const newApt = await api.bookAppointment({
         uhid: patient.uhid,
         patientName: patient.name,
-        patientPhone: patient.phone,
+        patientPhone: patient.phone || phoneToSave,
         doctorId: selectedDoctor.id,
         doctorName: selectedDoctor.name,
         department: selectedDoctor.departmentName || 'Specialist OPD',
@@ -129,15 +139,7 @@ export default function HeroBooking({ doctors, hospital, onAppointmentBooked, se
   };
 
   return (
-    <section id="booking" style={{
-      position: 'relative',
-      padding: '4rem 0 5rem',
-      overflow: 'hidden',
-      borderBottom: '1px solid var(--border-subtle)',
-      minHeight: '700px',
-      display: 'flex',
-      alignItems: 'center'
-    }}>
+    <section id="booking" className="hero-booking-section">
       {/* Crisp, Full-Color Auto-Changing Background Images */}
       <div style={{
         position: 'absolute',
@@ -184,16 +186,12 @@ export default function HeroBooking({ doctors, hospital, onAppointmentBooked, se
         }} />
       </div>
 
-      <div className="container" style={{
+      <div className="container hero-grid-container" style={{
         position: 'relative',
-        zIndex: 3,
-        display: 'grid',
-        gridTemplateColumns: '1.15fr 0.85fr',
-        gap: '3rem',
-        alignItems: 'center'
+        zIndex: 3
       }}>
         {/* Left Column: Hospital Value Proposition with Crisp High-Contrast Text */}
-        <div>
+        <div className="hero-left-col">
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', marginBottom: '1.25rem' }}>
             <span style={{
               display: 'inline-flex',
@@ -210,31 +208,16 @@ export default function HeroBooking({ doctors, hospital, onAppointmentBooked, se
             }}>
               ✦ Next-Gen Hospital Operating Platform
             </span>
-
-            {/* Slide Tracker Badge */}
-            <span style={{
-              backgroundColor: 'rgba(255, 255, 255, 0.2)',
-              backdropFilter: 'blur(8px)',
-              color: '#ffffff',
-              border: '1px solid rgba(255, 255, 255, 0.3)',
-              padding: '0.35rem 0.75rem',
-              borderRadius: '9999px',
-              fontSize: '0.75rem',
-              fontWeight: 700
-            }}>
-              Facility Photo {currentSlide + 1} of {HERO_IMAGES.length}
-            </span>
           </div>
 
-          <h1 style={{
-            fontSize: '3rem',
+          <h1 className="hero-main-heading" style={{
             letterSpacing: '-0.03em',
             lineHeight: 1.15,
             marginBottom: '1.25rem',
             color: '#ffffff',
             textShadow: '0 2px 10px rgba(0, 0, 0, 0.4)'
           }}>
-            Compassionate Care,<br />
+            Compassionate Care,<br className="hero-heading-break" />
             <span style={{
               background: 'linear-gradient(135deg, #38bdf8, #34d399)',
               WebkitBackgroundClip: 'text',
@@ -257,23 +240,24 @@ export default function HeroBooking({ doctors, hospital, onAppointmentBooked, se
           </p>
 
           {/* Real-time caption of the current photo */}
-          <div style={{
+          <div className="hero-caption-badge" style={{
             display: 'inline-flex',
             alignItems: 'center',
             gap: '0.6rem',
-            padding: '0.6rem 1rem',
-            backgroundColor: 'rgba(15, 23, 42, 0.75)',
+            padding: '0.55rem 0.85rem',
+            backgroundColor: 'rgba(15, 23, 42, 0.85)',
             backdropFilter: 'blur(12px)',
             border: '1px solid rgba(56, 189, 248, 0.4)',
             borderRadius: 'var(--radius-md)',
             boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3)',
             marginBottom: '2rem',
-            fontSize: '0.85rem',
+            fontSize: '0.825rem',
             color: '#38bdf8',
-            fontWeight: 700
+            fontWeight: 700,
+            maxWidth: '100%'
           }}>
-            <MapPinIcon size={16} color="#38bdf8" />
-            <span>{HERO_IMAGES[currentSlide].caption}</span>
+            <MapPinIcon size={16} color="#38bdf8" style={{ flexShrink: 0 }} />
+            <span style={{ overflowWrap: 'break-word', wordBreak: 'break-word' }}>{HERO_IMAGES[currentSlide].caption}</span>
           </div>
 
           {/* Quick Doctor Search Trigger */}
@@ -302,10 +286,7 @@ export default function HeroBooking({ doctors, hospital, onAppointmentBooked, se
           </div>
 
           {/* Clinical Key Stats Row */}
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(3, 1fr)',
-            gap: '1.5rem',
+          <div className="hero-stats-row" style={{
             paddingTop: '1.75rem',
             borderTop: '1px solid rgba(255, 255, 255, 0.2)'
           }}>
@@ -337,29 +318,31 @@ export default function HeroBooking({ doctors, hospital, onAppointmentBooked, se
                   backgroundColor: currentSlide === dotIdx ? '#38bdf8' : 'rgba(255, 255, 255, 0.4)',
                   border: currentSlide === dotIdx ? '2px solid #ffffff' : 'none',
                   cursor: 'pointer',
-                  transition: 'all 0.3s ease',
+                  transition: 'background-color 0.2s ease, width 0.2s ease',
                   boxShadow: currentSlide === dotIdx ? '0 0 10px #38bdf8' : 'none'
                 }}
               />
             ))}
-            <span style={{ fontSize: '0.75rem', color: '#cbd5e1', marginLeft: '0.5rem', fontWeight: 600 }}>
-              Auto-switching every 5s • Click dots to switch
-            </span>
           </div>
         </div>
 
         {/* Right Column: High-End Glassmorphic Appointment Booking Card */}
-        <div className="card card-static" style={{
-          padding: '2rem',
-          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.4)',
-          background: 'rgba(255, 255, 255, 0.96)',
-          backdropFilter: 'blur(20px)',
-          border: '1px solid rgba(255, 255, 255, 0.95)',
-          borderRadius: 'var(--radius-xl)',
-          transform: 'none',
-          cursor: 'default',
-          transition: 'none'
-        }}>
+        <div
+          id="booking"
+          className="card card-static hero-booking-card"
+          style={{
+            boxShadow: darkMode
+              ? '0 25px 60px -15px rgba(0, 0, 0, 0.95), 0 0 0 1px rgba(255, 255, 255, 0.12)'
+              : '0 25px 50px -12px rgba(0, 0, 0, 0.4)',
+            background: darkMode ? '#000000' : 'rgba(255, 255, 255, 0.96)',
+            backdropFilter: 'blur(20px)',
+            border: darkMode ? '1px solid rgba(255, 255, 255, 0.16)' : '1px solid rgba(255, 255, 255, 0.95)',
+            borderRadius: 'var(--radius-xl)',
+            transform: 'none',
+            cursor: 'default',
+            transition: 'background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease'
+          }}
+        >
           {confirmedApt ? (
             <div style={{ textAlign: 'center', padding: '1rem 0' }}>
               <div style={{
@@ -409,17 +392,38 @@ export default function HeroBooking({ doctors, hospital, onAppointmentBooked, se
                 </div>
               </div>
 
-              <div className="flex items-center justify-center gap-3">
+              <div className="flex items-center justify-center gap-3" style={{ flexWrap: 'wrap' }}>
                 <button onClick={resetForm} className="btn btn-secondary btn-sm">Book Another</button>
                 <button onClick={() => window.print()} className="btn btn-primary btn-sm">Print Token Slip</button>
+                {onViewLiveQueue && (
+                  <button
+                    type="button"
+                    onClick={onViewLiveQueue}
+                    className="btn btn-secondary btn-sm"
+                    style={{ color: '#10b981', borderColor: 'rgba(16, 185, 129, 0.4)', fontWeight: 700 }}
+                  >
+                    Track in Live Queue →
+                  </button>
+                )}
               </div>
             </div>
           ) : (
             <form onSubmit={handleSubmit}>
               <div style={{ marginBottom: '1.25rem' }}>
                 <span className="badge badge-primary" style={{ marginBottom: '0.35rem', fontSize: '0.7rem' }}>Online OPD Counter</span>
-                <h3 style={{ fontSize: '1.35rem', fontWeight: 800, color: '#0f172a' }}>Instant Doctor Appointment</h3>
-                <p style={{ fontSize: '0.825rem', color: 'var(--text-muted)' }}>Choose specialty, doctor and slot in 60 seconds</p>
+                <h3
+                  className="booking-card-title"
+                  style={{
+                    fontSize: '1.35rem',
+                    fontWeight: 800,
+                    color: darkMode ? '#ffffff' : '#0f172a'
+                  }}
+                >
+                  Instant Doctor Appointment
+                </h3>
+                <p style={{ fontSize: '0.825rem', color: darkMode ? '#94a3b8' : 'var(--text-muted)' }}>
+                  Choose specialty, doctor and slot in 60 seconds
+                </p>
               </div>
 
               {bookingAlert && (
@@ -513,7 +517,7 @@ export default function HeroBooking({ doctors, hospital, onAppointmentBooked, se
                 </div>
               )}
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: '0.75rem' }}>
+              <div className="hero-form-row hero-form-row-name-phone">
                 <div className="form-group">
                   <label className="form-label">Patient Name</label>
                   <input
@@ -526,19 +530,54 @@ export default function HeroBooking({ doctors, hospital, onAppointmentBooked, se
                   />
                 </div>
                 <div className="form-group">
-                  <label className="form-label">Mobile Phone</label>
-                  <input
-                    type="tel"
-                    value={patientPhone}
-                    onChange={(e) => setPatientPhone(e.target.value)}
-                    placeholder="e.g. 9811234501"
-                    className="form-control"
-                    required
-                  />
+                  <label className="form-label">Mobile Phone (India)</label>
+                  <div style={{ display: 'flex', alignItems: 'stretch' }}>
+                    <span style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '0.3rem',
+                      padding: '0.65rem 0.75rem',
+                      backgroundColor: darkMode ? '#1e293b' : 'var(--bg-muted)',
+                      border: '1px solid var(--border-subtle)',
+                      borderRight: 'none',
+                      borderTopLeftRadius: 'var(--radius-md)',
+                      borderBottomLeftRadius: 'var(--radius-md)',
+                      fontWeight: 800,
+                      fontSize: '0.85rem',
+                      color: darkMode ? '#f8fafc' : 'var(--text-main)',
+                      userSelect: 'none',
+                      whiteSpace: 'nowrap'
+                    }}>
+                      🇮🇳 +91
+                    </span>
+                    <input
+                      type="tel"
+                      value={patientPhone}
+                      onChange={(e) => {
+                        const val = e.target.value.replace(/\D/g, '').slice(0, 10);
+                        setPatientPhone(val);
+                      }}
+                      placeholder="10-digit number (e.g. 9811234501)"
+                      className="form-control"
+                      style={{
+                        borderTopLeftRadius: 0,
+                        borderBottomLeftRadius: 0
+                      }}
+                      maxLength={10}
+                      pattern="[6-9][0-9]{9}"
+                      title="Please enter a valid 10-digit Indian mobile number"
+                      required
+                    />
+                  </div>
+                  {patientPhone && patientPhone.length < 10 && (
+                    <span style={{ fontSize: '0.72rem', color: '#f59e0b', marginTop: '0.2rem' }}>
+                      {10 - patientPhone.length} more digit{10 - patientPhone.length > 1 ? 's' : ''} required
+                    </span>
+                  )}
                 </div>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+              <div className="hero-form-row hero-form-row-age-gender">
                 <div className="form-group">
                   <label className="form-label">Age</label>
                   <input

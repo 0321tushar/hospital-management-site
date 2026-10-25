@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   CalendarIcon,
   ActivityIcon,
@@ -11,11 +11,15 @@ import {
   SunIcon,
   MoonIcon,
   GlobeIcon,
-  HospitalPulseIcon
+  HospitalPulseIcon,
+  MenuIcon,
+  CloseIcon
 } from './Icons';
 
 export default function Navbar({
   activeMode,
+  publicView = 'home',
+  onSelectPublicView,
   onRequestERPMode,
   onBackToPublic,
   isStaffAuthenticated,
@@ -24,6 +28,8 @@ export default function Navbar({
   setDarkMode
 }) {
   const isERP = activeMode === 'erp';
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
 
   return (
     <>
@@ -64,9 +70,9 @@ export default function Navbar({
                 <span>24/7 TRAUMA: {hospital?.emergencyPhone || '1066'}</span>
               </span>
 
-              <span style={{ color: '#64748b', fontSize: '0.75rem' }}>|</span>
+              <span className="top-bar-secondary-info" style={{ color: '#64748b', fontSize: '0.75rem' }}>|</span>
 
-              <span style={{ color: '#94a3b8', fontSize: '0.78rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+              <span className="top-bar-secondary-info" style={{ color: '#94a3b8', fontSize: '0.78rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
                 <PhoneIcon size={13} color="#94a3b8" />
                 <span>Ambulance Dispatch • NABH Accredited Super Specialty</span>
               </span>
@@ -74,27 +80,6 @@ export default function Navbar({
 
             {/* Right Quick Controls */}
             <div className="flex items-center gap-3">
-              <button
-                onClick={onRequestERPMode}
-                style={{
-                  background: 'rgba(2, 132, 199, 0.2)',
-                  color: '#38bdf8',
-                  border: '1px solid rgba(2, 132, 199, 0.45)',
-                  padding: '0.22rem 0.75rem',
-                  borderRadius: '9999px',
-                  fontSize: '0.75rem',
-                  fontWeight: 700,
-                  cursor: 'pointer',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '0.35rem',
-                  transition: 'all 0.2s ease'
-                }}
-              >
-                {isStaffAuthenticated ? <UnlockIcon size={13} color="#38bdf8" /> : <LockIcon size={13} color="#38bdf8" />}
-                <span>{isStaffAuthenticated ? 'Staff ERP Desk (Unlocked)' : 'Staff Login (PIN)'}</span>
-              </button>
-
               <button
                 onClick={() => setDarkMode(!darkMode)}
                 className="btn btn-secondary btn-sm"
@@ -116,7 +101,7 @@ export default function Navbar({
       )}
 
       {/* Main Header Navigation */}
-      <header style={{
+      <header className="main-navbar-header" style={{
         position: 'sticky',
         top: 0,
         backgroundColor: 'var(--bg-surface)',
@@ -156,22 +141,22 @@ export default function Navbar({
                   <h2 style={{ fontSize: '1.15rem', fontWeight: 800, lineHeight: 1.1, margin: 0 }}>
                     {hospital?.name || 'PulseAura Super Specialty Hospital'}
                   </h2>
-                  <span className="badge badge-primary" style={{ fontSize: '0.65rem', padding: '0.15rem 0.55rem' }}>
+                  <span className="badge badge-primary erp-header-badge" style={{ fontSize: '0.65rem', padding: '0.15rem 0.55rem' }}>
                     Clinical ERP OS
                   </span>
                 </div>
-                <p style={{ fontSize: '0.72rem', color: 'var(--text-muted)', margin: '0.1rem 0 0' }}>
+                <p className="erp-header-subtitle" style={{ fontSize: '0.72rem', color: 'var(--text-muted)', margin: '0.1rem 0 0' }}>
                   Doctor OPD Desk • EMR Rx Writer • IPD Bed Matrix • Pharmacy Stock
                 </p>
               </div>
             </div>
 
-            <div className="flex items-center gap-4">
-              <span style={{
+            <div className="flex items-center gap-3">
+              <span className="erp-live-badge" style={{
                 backgroundColor: 'rgba(16, 185, 129, 0.12)',
                 color: '#10b981',
                 border: '1px solid rgba(16, 185, 129, 0.3)',
-                padding: '0.3rem 0.85rem',
+                padding: '0.3rem 0.75rem',
                 borderRadius: '9999px',
                 fontSize: '0.75rem',
                 fontWeight: 700,
@@ -180,7 +165,7 @@ export default function Navbar({
                 gap: '0.45rem'
               }}>
                 <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#10b981', display: 'inline-block', boxShadow: '0 0 8px #10b981' }} />
-                <span>Live OPD Active</span>
+                <span>Live OPD</span>
               </span>
 
               <button
@@ -188,7 +173,7 @@ export default function Navbar({
                 className="btn btn-secondary btn-sm"
                 style={{
                   fontSize: '0.82rem',
-                  padding: '0.45rem 1rem',
+                  padding: '0.45rem 0.85rem',
                   fontWeight: 700,
                   display: 'inline-flex',
                   alignItems: 'center',
@@ -196,7 +181,7 @@ export default function Navbar({
                 }}
               >
                 <GlobeIcon size={15} color="var(--primary)" />
-                <span>View Public Portal</span>
+                <span className="erp-public-btn-text">Public Portal</span>
               </button>
 
               <button
@@ -217,13 +202,24 @@ export default function Navbar({
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            gap: '1rem'
+            gap: '1rem',
+            position: 'relative'
           }}>
             {/* Logo & Brand */}
-            <a href="#" className="flex items-center gap-3" style={{ textDecoration: 'none' }}>
+            <a
+              href="#"
+              onClick={(e) => {
+                e.preventDefault();
+                if (onSelectPublicView) onSelectPublicView('home');
+                setMobileMenuOpen(false);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              className="flex items-center gap-3"
+              style={{ textDecoration: 'none', cursor: 'pointer', zIndex: 101 }}
+            >
               <div style={{
-                width: '2.75rem',
-                height: '2.75rem',
+                width: '2.5rem',
+                height: '2.5rem',
                 borderRadius: '12px',
                 background: 'linear-gradient(135deg, var(--primary), var(--accent))',
                 display: 'flex',
@@ -232,56 +228,74 @@ export default function Navbar({
                 boxShadow: '0 6px 16px rgba(2, 132, 199, 0.35)',
                 flexShrink: 0
               }}>
-                <HospitalPulseIcon size={22} color="#ffffff" />
+                <HospitalPulseIcon size={20} color="#ffffff" />
               </div>
-              <div>
-                <h1 style={{ fontSize: '1.25rem', fontWeight: 800, lineHeight: 1.15, color: 'var(--text-main)', margin: 0 }}>
+              <div style={{ maxWidth: 'calc(100vw - 150px)' }}>
+                <h1 style={{ fontSize: '1.15rem', fontWeight: 800, lineHeight: 1.15, color: 'var(--text-main)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {hospital?.name || 'PulseAura Super Specialty Hospital'}
                 </h1>
-                <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', margin: '0.15rem 0 0' }}>
+                <p className="navbar-brand-tagline" style={{ fontSize: '0.72rem', color: 'var(--text-muted)', margin: '0.15rem 0 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {hospital?.tagline || 'Center for Advanced Medicine & Compassionate Care'}
                 </p>
               </div>
             </a>
 
-            {/* Navigation Links with Modern Icons & Generous Spacing */}
-            <nav className="flex items-center" style={{ gap: '0.65rem' }}>
+            {/* Desktop Navigation Links */}
+            <nav className="navbar-desktop-nav flex items-center" style={{ gap: '0.45rem' }}>
               {/* 1. Book Consultation */}
-              <a
-                href="#booking"
+              <button
+                type="button"
+                onClick={() => {
+                  if (onSelectPublicView) onSelectPublicView('home');
+                  setTimeout(() => {
+                    const el = document.getElementById('booking');
+                    if (el) el.scrollIntoView({ behavior: 'smooth' });
+                  }, 60);
+                }}
                 className="nav-link-pill"
                 style={{
                   fontWeight: 600,
-                  fontSize: '0.84rem',
-                  color: 'var(--text-main)',
+                  fontSize: '0.82rem',
+                  color: publicView === 'home' ? 'var(--text-main)' : 'var(--text-muted)',
                   display: 'inline-flex',
                   alignItems: 'center',
-                  gap: '0.45rem',
-                  padding: '0.45rem 0.85rem',
+                  gap: '0.4rem',
+                  padding: '0.42rem 0.72rem',
                   borderRadius: 'var(--radius-md)',
-                  transition: 'all 0.2s ease',
-                  whiteSpace: 'nowrap'
+                  transition: 'background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease',
+                  whiteSpace: 'nowrap',
+                  background: 'transparent',
+                  border: '1px solid transparent',
+                  cursor: 'pointer'
                 }}
               >
-                <CalendarIcon size={15} color="var(--text-muted)" />
+                <CalendarIcon size={15} color={publicView === 'home' ? 'var(--primary)' : 'var(--text-muted)'} />
                 <span>Book Appointment</span>
-              </a>
+              </button>
 
-              {/* 3. Live Queue Board */}
-              <a
-                href="#queue"
+              {/* 2. Live Queue Board */}
+              <button
+                type="button"
+                id="nav-live-queue-btn"
+                onClick={() => {
+                  if (onSelectPublicView) onSelectPublicView('queue');
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
                 className="nav-link-pill"
                 style={{
-                  fontWeight: 600,
-                  fontSize: '0.84rem',
-                  color: 'var(--text-main)',
+                  fontWeight: 700,
+                  fontSize: '0.82rem',
+                  color: publicView === 'queue' ? '#10b981' : 'var(--text-main)',
                   display: 'inline-flex',
                   alignItems: 'center',
-                  gap: '0.45rem',
-                  padding: '0.45rem 0.85rem',
+                  gap: '0.4rem',
+                  padding: '0.42rem 0.72rem',
                   borderRadius: 'var(--radius-md)',
-                  transition: 'all 0.2s ease',
-                  whiteSpace: 'nowrap'
+                  transition: 'background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease',
+                  whiteSpace: 'nowrap',
+                  background: publicView === 'queue' ? 'rgba(16, 185, 129, 0.12)' : 'transparent',
+                  border: publicView === 'queue' ? '1px solid rgba(16, 185, 129, 0.4)' : '1px solid transparent',
+                  cursor: 'pointer'
                 }}
               >
                 <ActivityIcon size={15} color="#10b981" />
@@ -296,54 +310,74 @@ export default function Navbar({
                 }}>
                   LIVE
                 </span>
-              </a>
+              </button>
 
-              {/* 4. Specialties */}
-              <a
-                href="#specialties"
+              {/* 3. Specialties */}
+              <button
+                type="button"
+                onClick={() => {
+                  if (onSelectPublicView) onSelectPublicView('home');
+                  setTimeout(() => {
+                    const el = document.getElementById('specialties');
+                    if (el) el.scrollIntoView({ behavior: 'smooth' });
+                  }, 60);
+                }}
                 className="nav-link-pill"
                 style={{
                   fontWeight: 600,
-                  fontSize: '0.84rem',
+                  fontSize: '0.82rem',
                   color: 'var(--text-main)',
                   display: 'inline-flex',
                   alignItems: 'center',
-                  gap: '0.45rem',
-                  padding: '0.45rem 0.85rem',
+                  gap: '0.4rem',
+                  padding: '0.42rem 0.72rem',
                   borderRadius: 'var(--radius-md)',
-                  transition: 'all 0.2s ease',
-                  whiteSpace: 'nowrap'
+                  transition: 'background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease',
+                  whiteSpace: 'nowrap',
+                  background: 'transparent',
+                  border: '1px solid transparent',
+                  cursor: 'pointer'
                 }}
               >
                 <StethoscopeIcon size={15} color="var(--text-muted)" />
                 <span>Specialties</span>
-              </a>
+              </button>
 
-              {/* 5. My Health Records */}
-              <a
-                href="#patient-portal"
+              {/* 4. My Health Records */}
+              <button
+                type="button"
+                onClick={() => {
+                  if (onSelectPublicView) onSelectPublicView('home');
+                  setTimeout(() => {
+                    const el = document.getElementById('patient-portal');
+                    if (el) el.scrollIntoView({ behavior: 'smooth' });
+                  }, 60);
+                }}
                 className="nav-link-pill"
                 style={{
                   fontWeight: 600,
-                  fontSize: '0.84rem',
+                  fontSize: '0.82rem',
                   color: 'var(--text-main)',
                   display: 'inline-flex',
                   alignItems: 'center',
-                  gap: '0.45rem',
-                  padding: '0.45rem 0.85rem',
+                  gap: '0.4rem',
+                  padding: '0.42rem 0.72rem',
                   borderRadius: 'var(--radius-md)',
-                  transition: 'all 0.2s ease',
-                  whiteSpace: 'nowrap'
+                  transition: 'background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease',
+                  whiteSpace: 'nowrap',
+                  background: 'transparent',
+                  border: '1px solid transparent',
+                  cursor: 'pointer'
                 }}
               >
                 <RecordsIcon size={15} color="var(--text-muted)" />
                 <span>Health Records</span>
-              </a>
+              </button>
 
               {/* Vertical Divider */}
               <div style={{ width: '1px', height: '26px', backgroundColor: 'var(--border-subtle)', margin: '0 0.35rem' }} />
 
-              {/* 6. Staff ERP Portal Button */}
+              {/* Login Button */}
               <button
                 onClick={onRequestERPMode}
                 className="btn btn-primary"
@@ -360,12 +394,289 @@ export default function Navbar({
                 }}
               >
                 {isStaffAuthenticated ? <UnlockIcon size={14} color="#ffffff" /> : <LockIcon size={14} color="#ffffff" />}
-                <span>{isStaffAuthenticated ? 'Staff Portal' : 'Staff Login'}</span>
+                <span>Login</span>
               </button>
             </nav>
+
+            {/* Mobile Actions: Theme Toggle + Hamburger Button */}
+            <div className="navbar-mobile-actions items-center gap-2">
+              <button
+                onClick={() => setDarkMode(!darkMode)}
+                className="btn btn-secondary btn-sm"
+                style={{ padding: '0.4rem 0.6rem', fontSize: '0.75rem', display: 'inline-flex', alignItems: 'center' }}
+                title="Toggle Dark/Light Mode"
+                aria-label="Toggle Theme"
+              >
+                {darkMode ? <SunIcon size={15} color="#f59e0b" /> : <MoonIcon size={15} color="#64748b" />}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                className="btn btn-secondary btn-sm mobile-hamburger-btn"
+                style={{
+                  padding: '0.45rem 0.75rem',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderRadius: 'var(--radius-md)'
+                }}
+                aria-label={mobileMenuOpen ? 'Close Menu' : 'Open Navigation Menu'}
+              >
+                {mobileMenuOpen ? <CloseIcon size={20} color="var(--text-main)" /> : <MenuIcon size={20} color="var(--text-main)" />}
+              </button>
+            </div>
           </div>
         )}
       </header>
+
+      {/* Premium Mobile Slide-Out Drawer & Backdrop */}
+      {!isERP && mobileMenuOpen && (
+        <>
+          <div
+            className="mobile-nav-backdrop"
+            onClick={() => setMobileMenuOpen(false)}
+            style={{
+              position: 'fixed',
+              inset: 0,
+              backgroundColor: 'rgba(0, 0, 0, 0.65)',
+              zIndex: 9998,
+              backdropFilter: 'blur(4px)',
+              animation: 'alertModalScaleIn 0.2s ease-out'
+            }}
+          />
+          <div
+            className="mobile-nav-drawer"
+            style={{
+              position: 'fixed',
+              top: 0,
+              right: 0,
+              bottom: 0,
+              width: '85vw',
+              maxWidth: '360px',
+              backgroundColor: 'var(--bg-surface)',
+              boxShadow: '-10px 0 35px rgba(0, 0, 0, 0.45)',
+              padding: '1.25rem 1.15rem',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '0.75rem',
+              zIndex: 9999,
+              overflowY: 'auto',
+              WebkitOverflowScrolling: 'touch',
+              borderLeft: '1px solid var(--border-subtle)'
+            }}
+          >
+            {/* Drawer Header */}
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              paddingBottom: '0.85rem',
+              borderBottom: '1px solid var(--border-subtle)'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                <div style={{
+                  width: '2.2rem',
+                  height: '2.2rem',
+                  borderRadius: '10px',
+                  background: 'linear-gradient(135deg, var(--primary), var(--accent))',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  boxShadow: '0 4px 10px rgba(2, 132, 199, 0.3)'
+                }}>
+                  <HospitalPulseIcon size={18} color="#ffffff" />
+                </div>
+                <div>
+                  <div style={{ fontWeight: 800, fontSize: '0.95rem', color: 'var(--text-main)', lineHeight: 1.1 }}>
+                    PulseAura Health
+                  </div>
+                  <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>
+                    Mobile Navigation
+                  </div>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setMobileMenuOpen(false)}
+                className="btn btn-secondary btn-sm"
+                style={{
+                  width: '2.2rem',
+                  height: '2.2rem',
+                  padding: 0,
+                  borderRadius: '50%',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}
+                aria-label="Close Menu"
+              >
+                <CloseIcon size={18} color="var(--text-main)" />
+              </button>
+            </div>
+
+            {/* Navigation Options */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem', marginTop: '0.5rem' }}>
+              <button
+                type="button"
+                onClick={() => {
+                  if (onSelectPublicView) onSelectPublicView('home');
+                  setMobileMenuOpen(false);
+                  setTimeout(() => {
+                    const el = document.getElementById('booking');
+                    if (el) el.scrollIntoView({ behavior: 'smooth' });
+                  }, 60);
+                }}
+                className="btn btn-secondary"
+                style={{
+                  width: '100%',
+                  justifyContent: 'flex-start',
+                  padding: '0.75rem 1rem',
+                  fontSize: '0.925rem',
+                  fontWeight: 600,
+                  borderRadius: 'var(--radius-md)'
+                }}
+              >
+                <CalendarIcon size={18} color="var(--primary)" />
+                <span>Book Appointment</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  if (onSelectPublicView) onSelectPublicView('queue');
+                  setMobileMenuOpen(false);
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
+                className="btn btn-secondary"
+                style={{
+                  width: '100%',
+                  justifyContent: 'flex-start',
+                  padding: '0.75rem 1rem',
+                  fontSize: '0.925rem',
+                  fontWeight: 600,
+                  borderRadius: 'var(--radius-md)'
+                }}
+              >
+                <ActivityIcon size={18} color="#10b981" />
+                <span>Live Queue Board</span>
+                <span className="badge badge-success" style={{ marginLeft: 'auto', fontSize: '0.7rem' }}>
+                  LIVE
+                </span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  if (onSelectPublicView) onSelectPublicView('home');
+                  setMobileMenuOpen(false);
+                  setTimeout(() => {
+                    const el = document.getElementById('specialties');
+                    if (el) el.scrollIntoView({ behavior: 'smooth' });
+                  }, 60);
+                }}
+                className="btn btn-secondary"
+                style={{
+                  width: '100%',
+                  justifyContent: 'flex-start',
+                  padding: '0.75rem 1rem',
+                  fontSize: '0.925rem',
+                  fontWeight: 600,
+                  borderRadius: 'var(--radius-md)'
+                }}
+              >
+                <StethoscopeIcon size={18} color="var(--primary)" />
+                <span>Specialties & Doctors</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  if (onSelectPublicView) onSelectPublicView('home');
+                  setMobileMenuOpen(false);
+                  setTimeout(() => {
+                    const el = document.getElementById('patient-portal');
+                    if (el) el.scrollIntoView({ behavior: 'smooth' });
+                  }, 60);
+                }}
+                className="btn btn-secondary"
+                style={{
+                  width: '100%',
+                  justifyContent: 'flex-start',
+                  padding: '0.75rem 1rem',
+                  fontSize: '0.925rem',
+                  fontWeight: 600,
+                  borderRadius: 'var(--radius-md)'
+                }}
+              >
+                <RecordsIcon size={18} color="var(--primary)" />
+                <span>Patient Health Records</span>
+              </button>
+            </div>
+
+            {/* Bottom Section */}
+            <div style={{
+              marginTop: 'auto',
+              paddingTop: '1rem',
+              borderTop: '1px solid var(--border-subtle)',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '0.75rem'
+            }}>
+              <button
+                type="button"
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  onRequestERPMode();
+                }}
+                className="btn btn-primary"
+                style={{
+                  width: '100%',
+                  padding: '0.85rem 1rem',
+                  fontSize: '0.95rem',
+                  fontWeight: 700,
+                  borderRadius: 'var(--radius-md)',
+                  justifyContent: 'center',
+                  boxShadow: '0 4px 14px rgba(2, 132, 199, 0.4)'
+                }}
+              >
+                {isStaffAuthenticated ? <UnlockIcon size={18} color="#ffffff" /> : <LockIcon size={18} color="#ffffff" />}
+                <span>Staff & Doctor Login</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setDarkMode(!darkMode)}
+                className="btn btn-secondary btn-sm"
+                style={{
+                  width: '100%',
+                  padding: '0.65rem 1rem',
+                  fontSize: '0.85rem',
+                  fontWeight: 600,
+                  borderRadius: 'var(--radius-md)',
+                  justifyContent: 'center',
+                  gap: '0.5rem'
+                }}
+              >
+                {darkMode ? <SunIcon size={16} color="#f59e0b" /> : <MoonIcon size={16} color="#64748b" />}
+                <span>{darkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}</span>
+              </button>
+
+              <div style={{
+                textAlign: 'center',
+                fontSize: '0.72rem',
+                color: 'var(--text-muted)',
+                marginTop: '0.25rem'
+              }}>
+                Emergency: <strong>{hospital?.emergencyPhone || '1066'}</strong>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
     </>
   );
 }
+
+

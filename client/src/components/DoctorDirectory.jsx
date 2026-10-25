@@ -137,7 +137,7 @@ export default function DoctorDirectory({ doctors = [], hospital, onSelectDoctor
           position: 'relative'
         }}>
           {/* Main Search Bar Row */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1.8fr 1fr auto', gap: '1rem', alignItems: 'center' }}>
+          <div className="doctor-filter-grid">
             {/* Search Input with Icon */}
             <div style={{ position: 'relative' }}>
               <span style={{
@@ -306,11 +306,7 @@ export default function DoctorDirectory({ doctors = [], hospital, onSelectDoctor
             </button>
           </div>
         ) : (
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))',
-            gap: '1.75rem'
-          }}>
+          <div className="doctor-cards-grid">
             {filteredAndSortedDoctors.map(doc => (
               <div
                 key={doc.id}
@@ -408,7 +404,7 @@ export default function DoctorDirectory({ doctors = [], hospital, onSelectDoctor
                 </div>
 
                 {/* Card Action Footer */}
-                <div className="flex items-center justify-between" style={{ marginTop: 'auto', paddingTop: '0.75rem', borderTop: '1px solid var(--border-subtle)' }}>
+                <div className="flex items-center justify-between" style={{ marginTop: 'auto', paddingTop: '0.75rem', borderTop: '1px solid var(--border-subtle)', flexWrap: 'wrap', gap: '0.65rem' }}>
                   <div style={{ color: '#eab308', fontWeight: 800, fontSize: '0.875rem', display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}>
                     <StarIcon size={15} color="#eab308" fill="#eab308" />
                     <span>{doc.rating}</span>

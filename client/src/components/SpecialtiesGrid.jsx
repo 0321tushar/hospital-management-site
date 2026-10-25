@@ -298,10 +298,7 @@ export default function SpecialtiesGrid({ onSelectSpecialty }) {
           </p>
         </div>
 
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-          gap: '1.75rem',
+        <div className="specialties-cards-grid" style={{
           perspective: '1500px'
         }}>
           {SPECIALTIES_DATA.map((item, idx) => (
