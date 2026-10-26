@@ -10,7 +10,7 @@ const appointmentSchema = new mongoose.Schema({
   doctorName: { type: String, required: true },
   department: { type: String, required: true },
   opdRoom: { type: String, required: true },
-  date: { type: String, required: true },
+  date: { type: String, default: () => new Date().toISOString().split('T')[0] },
   timeSlot: { type: String, required: true },
   type: { type: String, default: 'General Consultation' },
   status: { type: String, default: 'Waiting', enum: ['Waiting', 'Calling Next', 'In Consultation', 'Completed', 'Cancelled'] },

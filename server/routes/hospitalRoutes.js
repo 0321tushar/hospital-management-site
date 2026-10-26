@@ -4,6 +4,8 @@ import { getHealthCheck, getHospital, updateHospital } from '../controllers/hosp
 const router = Router();
 
 router.get('/health', getHealthCheck);
+router.get('/hospital', getHospital);
+router.put('/hospital', updateHospital);
 router.get('/', getHospital);
 router.put('/', updateHospital);
 

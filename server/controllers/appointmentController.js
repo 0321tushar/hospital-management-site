@@ -32,7 +32,8 @@ export const bookAppointment = async (req, res) => {
     const tokenNumber = `TK-${(count + 1).toString().padStart(2, '0')}`;
     const id = `APT-${Math.floor(100 + Math.random() * 900)}`;
 
-    const newApt = { id, tokenNumber, ...req.body, status: 'Waiting' };
+    const date = req.body.date || new Date().toISOString().split('T')[0];
+    const newApt = { id, tokenNumber, date, ...req.body, status: 'Waiting' };
 
     if (getIsMongoLive()) {
       const created = await Appointment.create(newApt);
