@@ -357,4 +357,31 @@ export const CloseIcon = ({ size = 16, color = 'currentColor', className = '' })
   </svg>
 );
 
+export const ChevronDownIcon = ({ size = 16, color = 'currentColor', className = '' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <path d="M6 9l6 6 6-6" />
+  </svg>
+);
+
+export const HospitalBuildingIcon = ({ size = 18, color = 'currentColor', className = '' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <path d="M3 21h18" />
+    <path d="M5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16" />
+    <path d="M9 21v-4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v4" />
+    <path d="M10 9h4" />
+    <path d="M12 7v4" />
+    <rect x="8" y="3" width="8" height="2" rx="1" fill={color} fillOpacity="0.2" />
+  </svg>
+);
+
+export const DoctorBadgeIcon = ({ size = 18, color = 'currentColor', className = '' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <circle cx="12" cy="7" r="4" />
+    <path d="M5.5 21a6.5 6.5 0 0 1 13 0" />
+    <path d="M12 11v3" />
+    <path d="M10.5 12.5h3" />
+  </svg>
+);
+
+
 

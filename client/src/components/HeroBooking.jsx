@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../services/api';
 import { MapPinIcon, SearchIcon, ActivityIcon, CheckCircleIcon, AlertTriangleIcon } from './Icons';
+import { CustomDoctorSelect, CustomDepartmentSelect } from './CustomDropdown';
 
 const HERO_IMAGES = [
   {
@@ -469,33 +470,23 @@ export default function HeroBooking({ doctors, hospital, onAppointmentBooked, se
 
               <div className="form-group">
                 <label className="form-label">1. Clinical Department</label>
-                <select
+                <CustomDepartmentSelect
+                  departments={departments}
                   value={department}
-                  onChange={(e) => { setDepartment(e.target.value); setDoctorId(''); setTimeSlot(''); }}
-                  className="form-control"
-                >
-                  <option value="">-- All Clinical Specialties --</option>
-                  {departments.map(d => (
-                    <option key={d.id} value={d.id}>{d.name}</option>
-                  ))}
-                </select>
+                  onChange={(val) => { setDepartment(val); setDoctorId(''); setTimeSlot(''); }}
+                  darkMode={darkMode}
+                />
               </div>
 
               <div className="form-group">
                 <label className="form-label">2. Specialist Doctor</label>
-                <select
+                <CustomDoctorSelect
+                  doctors={filteredDoctors}
                   value={doctorId}
-                  onChange={(e) => { setDoctorId(e.target.value); setTimeSlot(''); }}
-                  className="form-control"
-                  required
-                >
-                  <option value="">-- Select Doctor --</option>
-                  {filteredDoctors.map(d => (
-                    <option key={d.id} value={d.id}>
-                      {d.name} ({d.specialty} • {hospital?.currency || '₹'}{d.fee})
-                    </option>
-                  ))}
-                </select>
+                  onChange={(val) => { setDoctorId(val); setTimeSlot(''); }}
+                  currency={hospital?.currency || '₹'}
+                  darkMode={darkMode}
+                />
               </div>
 
               {selectedDoctor && (
