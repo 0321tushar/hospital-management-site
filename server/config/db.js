@@ -2,6 +2,10 @@ import mongoose from 'mongoose';
 import dns from 'dns';
 
 export const connectDB = async () => {
+  if (mongoose.connection.readyState === 1) {
+    return true;
+  }
+
   const uri = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/hospital_management';
   
   // Resolve SRV records reliably if local ISP DNS refuses them on Windows

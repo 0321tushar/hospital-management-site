@@ -64,6 +64,15 @@ connectDB().then(async (connected) => {
   }
 });
 
+// Serverless DB connection assurance
+app.use(async (req, res, next) => {
+  if (!getIsMongoLive()) {
+    const connected = await connectDB();
+    setMongoLive(connected);
+  }
+  next();
+});
+
 // Mount Modular API Routes
 app.use('/api', hospitalRoutes); // /api/health, /api/hospital
 app.use('/api/doctors', doctorRoutes);
@@ -79,11 +88,15 @@ app.use('/api', staffRoutes); // /api/staff-users, /api/staff-auth
 app.use(notFoundHandler);
 app.use(errorHandler);
 
-// Start Express Server
-app.listen(PORT, () => {
-  console.log(`\n======================================================`);
-  console.log(`[PulseAura MERN Server] Running on http://localhost:${PORT}`);
-  console.log(`[Database Status]: ${getIsMongoLive() ? 'Connected to MongoDB' : 'In-Memory / Auto-Seed Mode'}`);
-  console.log(`[Architecture]: Modular MVC (Routes, Controllers & Models)`);
-  console.log(`======================================================\n`);
-});
+// Start Express Server (when not running in Vercel Serverless environment)
+if (!process.env.VERCEL) {
+  app.listen(PORT, () => {
+    console.log(`\n======================================================`);
+    console.log(`[PulseAura MERN Server] Running on http://localhost:${PORT}`);
+    console.log(`[Database Status]: ${getIsMongoLive() ? 'Connected to MongoDB' : 'In-Memory / Auto-Seed Mode'}`);
+    console.log(`[Architecture]: Modular MVC (Routes, Controllers & Models)`);
+    console.log(`======================================================\n`);
+  });
+}
+
+export default app;
