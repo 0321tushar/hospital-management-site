@@ -88,9 +88,17 @@ export function CustomDoctorSelect({
   onChange,
   currency = '₹',
   darkMode = false,
-  placeholder = '-- Select Doctor --'
+  placeholder = '-- Select Doctor --',
+  isOpen: controlledIsOpen,
+  onToggle
 }) {
-  const [isOpen, setIsOpen] = useState(false);
+  const [internalIsOpen, setInternalIsOpen] = useState(false);
+  const isOpen = controlledIsOpen !== undefined ? controlledIsOpen : internalIsOpen;
+  const setIsOpen = (next) => {
+    if (onToggle) onToggle(typeof next === 'function' ? next(isOpen) : next);
+    else setInternalIsOpen(next);
+  };
+
   const [search, setSearch] = useState('');
   const dropdownRef = useRef(null);
   const searchInputRef = useRef(null);
@@ -272,8 +280,11 @@ export function CustomDoctorSelect({
             )}
           </div>
 
-          {/* List of Doctors */}
-          <div className="custom-dropdown-list">
+          {/* List of Doctors - isolated smooth scroll with thin 4px thumb */}
+          <div
+            className="custom-dropdown-list"
+            onWheel={(e) => e.stopPropagation()}
+          >
             {filteredDoctors.length === 0 ? (
               <div style={{
                 padding: '1.25rem 0.75rem',
@@ -401,9 +412,17 @@ export function CustomDepartmentSelect({
   value = '',
   onChange,
   darkMode = false,
-  placeholder = '-- All Clinical Specialties --'
+  placeholder = '-- All Clinical Specialties --',
+  isOpen: controlledIsOpen,
+  onToggle
 }) {
-  const [isOpen, setIsOpen] = useState(false);
+  const [internalIsOpen, setInternalIsOpen] = useState(false);
+  const isOpen = controlledIsOpen !== undefined ? controlledIsOpen : internalIsOpen;
+  const setIsOpen = (next) => {
+    if (onToggle) onToggle(typeof next === 'function' ? next(isOpen) : next);
+    else setInternalIsOpen(next);
+  };
+
   const dropdownRef = useRef(null);
 
   const selectedDept = departments.find(d => d.id === value);
@@ -468,7 +487,11 @@ export function CustomDepartmentSelect({
 
       {isOpen && (
         <div className="custom-dropdown-menu" role="listbox">
-          <div className="custom-dropdown-list">
+          {/* Fits all departments cleanly with ZERO scrollbar */}
+          <div
+            className="custom-dropdown-list custom-dropdown-list-fit"
+            onWheel={(e) => e.stopPropagation()}
+          >
             {/* All Specialties Option */}
             <div
               className={`custom-dropdown-item ${!value ? 'is-selected' : ''}`}

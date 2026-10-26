@@ -1057,17 +1057,28 @@ button, input, select, textarea {
 
 /* Sub-list scrollable area */
 .custom-dropdown-list {
-  max-height: 270px;
+  max-height: 330px;
   overflow-y: auto;
   overscroll-behavior: contain;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
   display: flex;
   flex-direction: column;
-  gap: 0.3rem;
-  padding-right: 2px;
+  gap: 0.25rem;
+  padding-right: 4px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(148, 163, 184, 0.3) transparent;
+}
+
+/* Department dropdown fits all items cleanly with ZERO scrollbar */
+.custom-dropdown-list-fit {
+  max-height: none !important;
+  overflow-y: visible !important;
+  padding-right: 0 !important;
 }
 
 .custom-dropdown-list::-webkit-scrollbar {
-  width: 6px;
+  width: 4px;
 }
 
 .custom-dropdown-list::-webkit-scrollbar-track {
@@ -1075,12 +1086,13 @@ button, input, select, textarea {
 }
 
 .custom-dropdown-list::-webkit-scrollbar-thumb {
-  background: rgba(148, 163, 184, 0.4);
-  border-radius: 10px;
+  background: rgba(148, 163, 184, 0.3);
+  border-radius: 999px;
+  transition: background 0.2s;
 }
 
 .custom-dropdown-list::-webkit-scrollbar-thumb:hover {
-  background: rgba(148, 163, 184, 0.7);
+  background: var(--primary, #0284c7);
 }
 
 /* Sub-list Item Card */

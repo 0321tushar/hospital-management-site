@@ -34,6 +34,7 @@ export default function HeroBooking({ doctors, hospital, onAppointmentBooked, se
   const [loading, setLoading] = useState(false);
   const [confirmedApt, setConfirmedApt] = useState(null);
   const [bookingAlert, setBookingAlert] = useState(null);
+  const [openDropdown, setOpenDropdown] = useState(null);
 
   // Sync when doctor is selected from "Find a Doctor" directory
   useEffect(() => {
@@ -473,7 +474,9 @@ export default function HeroBooking({ doctors, hospital, onAppointmentBooked, se
                 <CustomDepartmentSelect
                   departments={departments}
                   value={department}
-                  onChange={(val) => { setDepartment(val); setDoctorId(''); setTimeSlot(''); }}
+                  onChange={(val) => { setDepartment(val); setDoctorId(''); setTimeSlot(''); setOpenDropdown(null); }}
+                  isOpen={openDropdown === 'dept'}
+                  onToggle={(open) => setOpenDropdown(open ? 'dept' : null)}
                   darkMode={darkMode}
                 />
               </div>
@@ -483,7 +486,9 @@ export default function HeroBooking({ doctors, hospital, onAppointmentBooked, se
                 <CustomDoctorSelect
                   doctors={filteredDoctors}
                   value={doctorId}
-                  onChange={(val) => { setDoctorId(val); setTimeSlot(''); }}
+                  onChange={(val) => { setDoctorId(val); setTimeSlot(''); setOpenDropdown(null); }}
+                  isOpen={openDropdown === 'doc'}
+                  onToggle={(open) => setOpenDropdown(open ? 'doc' : null)}
                   currency={hospital?.currency || '₹'}
                   darkMode={darkMode}
                 />
